@@ -6,6 +6,8 @@ fun main() {
 
     val dictionary = loadDictionary()
 
+    dictionary.forEach { println(it) }
+
     while (true) {
         println(
             """
@@ -39,7 +41,7 @@ fun loadDictionary(): MutableList<Word> {
     for (line in readFile) {
         val split = line.split("|")
 
-        val word = Word(split[0], split[1], split.getOrNull(2)?.toIntOrNull() ?: 0)
+        val word = Word(split[0], split[1], split[2].toInt())
         dictionary.add(word)
     }
 
@@ -49,5 +51,5 @@ fun loadDictionary(): MutableList<Word> {
 data class Word(
     val text: String,
     val translate: String,
-    val correctAnswerCount: Int? = 0,
+    val correctAnswerCount: Int = 0,
 )
