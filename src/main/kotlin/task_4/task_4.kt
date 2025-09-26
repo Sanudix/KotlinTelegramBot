@@ -6,6 +6,8 @@ fun main() {
 
     val dictionary = loadDictionary()
 
+    dictionary.forEach { println(it) }
+
     while (true) {
         println(
             """
@@ -31,7 +33,7 @@ fun main() {
 data class Word(
     val text: String,
     val translate: String,
-    val correctAnswerCount: Int? = 0,
+    val correctAnswerCount: Int = 0,
 )
 
 fun loadDictionary(): MutableList<Word> {
@@ -45,7 +47,7 @@ fun loadDictionary(): MutableList<Word> {
     for (line in readFile) {
         val split = line.split("|")
 
-        val word = Word(split[0], split[1], split.getOrNull(2)?.toIntOrNull() ?: 0)
+        val word = Word(split[0], split[1], split[2].toInt())
         dictionary.add(word)
     }
 
@@ -55,7 +57,7 @@ fun loadDictionary(): MutableList<Word> {
 fun printStatistics(wordsList: MutableList<Word>) {
 
     val totalCount: Int = wordsList.count()
-    val learnedCount: Int = wordsList.count { (it.correctAnswerCount ?: 0) >= 3 }
+    val learnedCount: Int = wordsList.count { it.correctAnswerCount >= 3 }
 
     val percent: Int = ((learnedCount.toFloat() / totalCount.toFloat()) * 100).toInt()
 
