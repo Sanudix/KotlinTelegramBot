@@ -54,12 +54,18 @@ fun loadDictionary(): MutableList<Word> {
     return dictionary
 }
 
-fun printStatistics(wordsList: MutableList<Word>) {
+fun printStatistics(wordsList: List<Word>) {
 
     val totalCount: Int = wordsList.count()
     val learnedCount: Int = wordsList.count { it.correctAnswerCount >= 3 }
 
-    val percent: Int = ((learnedCount.toFloat() / totalCount.toFloat()) * 100).toInt()
+    var percent: Int
 
-    println("\nВыучено $totalCount из $learnedCount слов | $percent%\n")
+    if (totalCount > 0) {
+        percent = ((learnedCount.toFloat() / totalCount.toFloat()) * 100).toInt()
+    } else {
+        percent = 0
+    }
+
+    println("\nВыучено $learnedCount из $totalCount слов | $percent%\n")
 }
