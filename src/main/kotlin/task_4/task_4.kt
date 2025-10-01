@@ -1,12 +1,11 @@
 package org.example.task_4
 
 import java.io.File
+import java.io.FileNotFoundException
 
 fun main() {
 
     val dictionary = loadDictionary()
-
-    dictionary.forEach { println(it) }
 
     while (true) {
         println(
@@ -33,22 +32,32 @@ fun main() {
 data class Word(
     val text: String,
     val translate: String,
-    val correctAnswerCount: Int = 0,
+    val correctAnswerCount: Int? = 0,
 )
 
 fun loadDictionary(): MutableList<Word> {
 
     val dictionary = mutableListOf<Word>()
 
-    val wordFile = File("words.txt")
+    try {
+        val wordFile = File("words.txt")
 
-    val readFile = wordFile.readLines()
+        val readFile = wordFile.readLines()
 
-    for (line in readFile) {
-        val split = line.split("|")
+        for (line in readFile) {
+            val split = line.split("|")
 
-        val word = Word(split[0], split[1], split[2].toInt())
-        dictionary.add(word)
+            if (split.size == 3) {
+                val word = Word(split[0], split[1], split[2].toIntOrNull())
+                dictionary.add(word)
+            } else if (split.size < 3) {
+                println("Недостаточно данных для добавления слова.")
+            } else {
+                println("Неверный формат строки: IndexOutOfBoundsException.")
+            }
+        }
+    } catch (e: FileNotFoundException) {
+        println("Ошибка: Файл 'words.txt' не найден!")
     }
 
     return dictionary
@@ -57,7 +66,7 @@ fun loadDictionary(): MutableList<Word> {
 fun printStatistics(wordsList: List<Word>) {
 
     val totalCount: Int = wordsList.count()
-    val learnedCount: Int = wordsList.count { it.correctAnswerCount >= 3 }
+    val learnedCount: Int = wordsList.count { (it.correctAnswerCount ?: 0) >= 3 }
 
     var percent: Int
 
