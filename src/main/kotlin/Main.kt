@@ -3,6 +3,9 @@ package org.example
 import java.io.File
 import java.io.FileNotFoundException
 
+const val RIGHT_ANSWER_NUMBER = 3
+const val FOUR = 4
+
 fun main() {
 
     val dictionary = loadDictionary()
@@ -33,7 +36,7 @@ fun main() {
 data class Word(
     val text: String,
     val translate: String,
-    var correctAnswerCount: Int? = 0,
+    var correctAnswerCount: Int = 0,
 )
 
 fun loadDictionary(): MutableList<Word> {
@@ -48,10 +51,10 @@ fun loadDictionary(): MutableList<Word> {
         for (line in readFile) {
             val split = line.split("|")
 
-            if (split.size == 3) {
-                val word = Word(split[0], split[1], split[2].toIntOrNull())
+            if (split.size == RIGHT_ANSWER_NUMBER) {
+                val word = Word(split[0], split[1], (split[2].toIntOrNull() ?: 0))
                 dictionary.add(word)
-            } else if (split.size < 3) {
+            } else if (split.size < RIGHT_ANSWER_NUMBER) {
                 println("Недостаточно данных для добавления слова.")
             } else {
                 println("Неверный формат строки: IndexOutOfBoundsException.")
@@ -67,7 +70,7 @@ fun loadDictionary(): MutableList<Word> {
 fun printStatistics(wordsList: List<Word>) {
 
     val totalCount: Int = wordsList.count()
-    val learnedCount: Int = wordsList.count { (it.correctAnswerCount ?: 0) >= 3 }
+    val learnedCount: Int = wordsList.count { (it.correctAnswerCount ?: 0) >= RIGHT_ANSWER_NUMBER }
 
     var percent: Int
 
@@ -87,10 +90,8 @@ fun learnWords(wordsList: MutableList<Word>) {
         val notLearnedList = mutableListOf<Word>()
         var counter = 0
 
-        val shuffledWordsList = wordsList.shuffled()
-
-        shuffledWordsList.forEach { element ->
-            if ((element.correctAnswerCount ?: 0) < 3) {
+        wordsList.forEach { element ->
+            if ((element.correctAnswerCount ?: 0) < RIGHT_ANSWER_NUMBER) {
                 notLearnedList.add(element)
                 counter++
             }
@@ -100,13 +101,14 @@ fun learnWords(wordsList: MutableList<Word>) {
             println("\nВсе слова выучены.")
             break
         } else {
-            var questionWords = notLearnedList.take(4)
 
-            val currentEnglishWord = questionWords[0].text
-            val currentTranslateWord = questionWords[0].translate
-            var currentCorrectAnswerCount = questionWords[0].correctAnswerCount
+            var questionWords = notLearnedList.shuffled().take(FOUR)
 
-            questionWords = questionWords.shuffled()
+            val randomNumber = (0..3).random()
+
+            val currentEnglishWord = questionWords[randomNumber].text
+            val currentTranslateWord = questionWords[randomNumber].translate
+            var currentCorrectAnswerCount = questionWords[randomNumber].correctAnswerCount
 
             println("\n${currentEnglishWord}:")
 
@@ -129,7 +131,7 @@ fun learnWords(wordsList: MutableList<Word>) {
             }
             if (userAnswer - 1 < questionWords.size) {
                 if (questionWords[userAnswer - 1].translate == currentTranslateWord) {
-                    currentCorrectAnswerCount = currentCorrectAnswerCount!! + 1
+                    currentCorrectAnswerCount = (currentCorrectAnswerCount ?: 0) + 1
                     println("\nПравильный ответ!")
 
                     val index =
