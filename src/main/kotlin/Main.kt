@@ -70,7 +70,7 @@ fun loadDictionary(): MutableList<Word> {
 fun printStatistics(wordsList: List<Word>) {
 
     val totalCount: Int = wordsList.count()
-    val learnedCount: Int = wordsList.count { (it.correctAnswerCount ?: 0) >= RIGHT_ANSWER_NUMBER }
+    val learnedCount: Int = wordsList.count { it.correctAnswerCount >= RIGHT_ANSWER_NUMBER }
 
     var percent: Int
 
@@ -91,7 +91,7 @@ fun learnWords(wordsList: MutableList<Word>) {
         var counter = 0
 
         wordsList.forEach { element ->
-            if ((element.correctAnswerCount ?: 0) < RIGHT_ANSWER_NUMBER) {
+            if (element.correctAnswerCount  < RIGHT_ANSWER_NUMBER) {
                 notLearnedList.add(element)
                 counter++
             }
@@ -131,7 +131,7 @@ fun learnWords(wordsList: MutableList<Word>) {
             }
             if (userAnswer - 1 < questionWords.size) {
                 if (questionWords[userAnswer - 1].translate == currentTranslateWord) {
-                    currentCorrectAnswerCount = (currentCorrectAnswerCount ?: 0) + 1
+                    currentCorrectAnswerCount = currentCorrectAnswerCount + 1
                     println("\nПравильный ответ!")
 
                     val index =
