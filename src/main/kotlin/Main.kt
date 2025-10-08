@@ -4,7 +4,7 @@ import java.io.File
 import java.io.FileNotFoundException
 
 const val RIGHT_ANSWER_NUMBER = 3
-const val FOUR = 4
+const val COUNT_OF_WORDS_IN_QUESTIONS = 4
 
 fun main() {
 
@@ -102,7 +102,7 @@ fun learnWords(wordsList: MutableList<Word>) {
             break
         } else {
 
-            var questionWords = notLearnedList.shuffled().take(FOUR)
+            val questionWords = notLearnedList.shuffled().take(COUNT_OF_WORDS_IN_QUESTIONS)
 
             val randomNumber = (0..3).random()
 
