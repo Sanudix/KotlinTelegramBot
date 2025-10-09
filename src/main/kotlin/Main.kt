@@ -95,16 +95,16 @@ fun learnWords(wordsList: MutableList<Word>) {
     while (true) {
 
         val notLearnedList = mutableListOf<Word>()
-        var counter = 0
+        var notLearnedWordsCounter = 0
 
         wordsList.forEach { element ->
             if (element.correctAnswerCount  < RIGHT_ANSWER_NUMBER) {
                 notLearnedList.add(element)
-                counter++
+                notLearnedWordsCounter++
             }
         }
 
-        if (counter == 0) {
+        if (notLearnedWordsCounter == 0) {
             println("\nВсе слова выучены.")
             saveDictionary(wordsList)
             break
@@ -112,11 +112,9 @@ fun learnWords(wordsList: MutableList<Word>) {
 
             val questionWords = notLearnedList.shuffled().take(COUNT_OF_WORDS_IN_QUESTIONS)
 
-            val questionWordsCount = questionWords.size
+            val correctAnswerId = (0 until questionWords.size).random()
 
-            val correctAnswerId = (0 until questionWordsCount).random()
-
-            var currentCorrectAnswerCount = questionWords[correctAnswerId].correctAnswerCount
+            var currentWord = questionWords[correctAnswerId]
 
             println("\n${questionWords[correctAnswerId].text}:")
 
@@ -139,14 +137,14 @@ fun learnWords(wordsList: MutableList<Word>) {
                 break
             }
             if (userAnswerInput - 1 < questionWords.size) {
-                if (questionWords[userAnswerInput - 1].translate == questionWords[correctAnswerId].translate) {
-                    currentCorrectAnswerCount = currentCorrectAnswerCount + 1
+                if (questionWords[userAnswerInput - 1].translate == currentWord.translate) {
+                    currentWord.correctAnswerCount++
                     println("\nПравильно!")
 
                     val index =
-                        wordsList.indexOfFirst { it.text == questionWords[correctAnswerId].text && it.translate == questionWords[correctAnswerId].translate }
+                        wordsList.indexOfFirst { it.text == currentWord.text && it.translate == currentWord.translate }
 
-                    wordsList[index].correctAnswerCount = currentCorrectAnswerCount
+                    wordsList[index].correctAnswerCount = currentWord.correctAnswerCount
                 } else {
                     println("\nНеправильно! ${questionWords[correctAnswerId].text} - это ${questionWords[correctAnswerId].translate}")
                 }
