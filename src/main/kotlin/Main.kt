@@ -119,9 +119,7 @@ fun learnWords(wordsList: MutableList<Word>) {
             in 1..questionWords.size -> {
                 if (userAnswerInput?.minus(1) == correctAnswerId) {
                     println("\nПравильно!")
-                    val index =
-                        wordsList.indexOfFirst { it.text == currentWord.text && it.translate == currentWord.translate }
-                    wordsList[index].correctAnswerCount = currentWord.correctAnswerCount + 1
+                    currentWord.correctAnswerCount++
                     saveDictionary(wordsList)
                 } else {
                     println("\nНеправильно! ${questionWords[correctAnswerId].text} - это ${questionWords[correctAnswerId].translate}")
