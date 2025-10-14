@@ -67,6 +67,13 @@ fun loadDictionary(): MutableList<Word> {
     return dictionary
 }
 
+fun saveDictionary(wordsList: List<Word>, filename: String = "words.txt") {
+    val content = wordsList.joinToString("\n") { word ->
+        "${word.text}|${word.translate}|${word.correctAnswerCount}"
+    }
+    File(filename).writeText(content)
+}
+
 fun printStatistics(wordsList: List<Word>) {
 
     val totalCount: Int = wordsList.count()
@@ -86,65 +93,40 @@ fun printStatistics(wordsList: List<Word>) {
 fun learnWords(wordsList: MutableList<Word>) {
 
     while (true) {
+        val notLearnedList = wordsList.filter { it.correctAnswerCount < RIGHT_ANSWER_NUMBER }
 
-        val notLearnedList = mutableListOf<Word>()
-        var counter = 0
-
-        wordsList.forEach { element ->
-            if (element.correctAnswerCount  < RIGHT_ANSWER_NUMBER) {
-                notLearnedList.add(element)
-                counter++
-            }
-        }
-
-        if (counter == 0) {
+        if (notLearnedList.isEmpty()) {
             println("\nВсе слова выучены.")
             break
-        } else {
+        }
 
-            val questionWords = notLearnedList.shuffled().take(COUNT_OF_WORDS_IN_QUESTIONS)
+        val questionWords = notLearnedList.shuffled().take(COUNT_OF_WORDS_IN_QUESTIONS)
 
-            val randomNumber = (0..3).random()
+        val correctAnswerId = (0 until questionWords.size).random()
 
-            val currentEnglishWord = questionWords[randomNumber].text
-            val currentTranslateWord = questionWords[randomNumber].translate
-            var currentCorrectAnswerCount = questionWords[randomNumber].correctAnswerCount
+        val currentWord = questionWords[correctAnswerId]
 
-            println("\n${currentEnglishWord}:")
+        println("\n${questionWords[correctAnswerId].text}:")
 
+        questionWords.forEachIndexed { index, word ->
+            println(" ${index + 1} - ${word.translate}")
+        }
+        println("-----------\n 0 - Меню")
+        print("\nВведите ответ: ")
 
-            questionWords.forEachIndexed { index, word ->
-                println(" ${index + 1} - ${word.translate}")
-            }
-            println(" 0 - главное меню")
-
-            print("\nВведите ответ: ")
-            var userAnswer = readln().toIntOrNull()
-
-            while (userAnswer == null) {
-                print("\nНекорректный ввод! Введите число из списка: ")
-                userAnswer = readln().toIntOrNull()
-            }
-
-            if (userAnswer == 0) {
-                break
-            }
-            if (userAnswer - 1 < questionWords.size) {
-                if (questionWords[userAnswer - 1].translate == currentTranslateWord) {
-                    currentCorrectAnswerCount = currentCorrectAnswerCount + 1
-                    println("\nПравильный ответ!")
-
-                    val index =
-                        wordsList.indexOfFirst { it.text == currentEnglishWord && it.translate == currentTranslateWord }
-
-                    wordsList[index].correctAnswerCount = currentCorrectAnswerCount
+        when (val userAnswerInput = readln().toIntOrNull()) {
+            0 -> break
+            in 1..questionWords.size -> {
+                if (userAnswerInput?.minus(1) == correctAnswerId) {
+                    println("\nПравильно!")
+                    currentWord.correctAnswerCount++
+                    saveDictionary(wordsList)
                 } else {
-                    println("\nНеправильный ответ!")
+                    println("\nНеправильно! ${questionWords[correctAnswerId].text} - это ${questionWords[correctAnswerId].translate}")
                 }
-            } else {
-                println("\nВведено неверное число!")
             }
 
+            else -> println("\nВведено неверное число!")
         }
     }
 }
