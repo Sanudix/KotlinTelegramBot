@@ -9,7 +9,7 @@ const val COUNT_OF_WORDS_IN_QUESTIONS = 4
 data class Statistics(
     val totalCount: Int,
     val learnedCount: Int,
-    var percent: Int,
+    val percent: Int,
 )
 
 data class Question(
@@ -45,7 +45,7 @@ class LearnWordsTrainer {
         return question?.let {
             val correctAnswerId = it.variants.indexOf(it.correctWord)
             when (userAnswerInput) {
-                in 1..question?.variants?.size!! -> {
+                in question?.variants?.indices ?: return false -> {
                     if (userAnswerInput == correctAnswerId) {
                         question?.correctWord?.correctAnswerCount++
                         saveDictionary(dictionary)
