@@ -4,8 +4,6 @@ import java.io.File
 import java.io.FileNotFoundException
 import kotlin.ranges.contains
 
-const val COUNT_OF_WORDS_IN_QUESTIONS = 4
-
 data class Statistics(
     val totalCount: Int,
     val learnedCount: Int,
@@ -17,22 +15,28 @@ data class Question(
     val correctWord: Word,
 )
 
-class LearnWordsTrainer {
+class LearnWordsTrainer(private val countWordsQuestion: Int = 4, private val learnedAnswerCount: Int = 3) {
 
     private var question: Question? = null
     val dictionary = loadDictionary()
 
     fun getStatistics(): Statistics {
         val totalCount: Int = dictionary.count()
-        val learnedCount: Int = dictionary.count { it.correctAnswerCount >= RIGHT_ANSWER_NUMBER }
+        val learnedCount: Int = dictionary.count { it.correctAnswerCount >= learnedAnswerCount }
         val percent = learnedCount * 100 / totalCount
         return Statistics(totalCount, learnedCount, percent)
     }
 
     fun getNextQuestion(): Question? {
-        val notLearnedList = dictionary.filter { it.correctAnswerCount < RIGHT_ANSWER_NUMBER }
+        val notLearnedList = dictionary.filter { it.correctAnswerCount < learnedAnswerCount }
         if (notLearnedList.isEmpty()) return null
-        val questionWords = notLearnedList.shuffled().take(COUNT_OF_WORDS_IN_QUESTIONS)
+        val questionWords = if (notLearnedList.size < countWordsQuestion) {
+            val learnedList = dictionary.filter { it.correctAnswerCount >= learnedAnswerCount }.shuffled()
+            notLearnedList.shuffled().take(countWordsQuestion) + learnedList.take(countWordsQuestion - notLearnedList.size)
+        } else {
+            notLearnedList.shuffled().take(countWordsQuestion)
+        }.shuffled()
+
         val correctAnswer = questionWords.random()
         question = Question(
             variants = questionWords,
@@ -45,9 +49,9 @@ class LearnWordsTrainer {
         return question?.let {
             val correctAnswerId = it.variants.indexOf(it.correctWord)
             when (userAnswerInput) {
-                in question?.variants?.indices ?: return false -> {
+                in it.variants.indices -> {
                     if (userAnswerInput == correctAnswerId) {
-                        question?.correctWord?.correctAnswerCount++
+                        it.correctWord.correctAnswerCount++
                         saveDictionary(dictionary)
                         true
                     } else {
@@ -72,17 +76,17 @@ class LearnWordsTrainer {
             for (line in readFile) {
                 val split = line.split("|")
 
-                if (split.size == RIGHT_ANSWER_NUMBER) {
+                if (split.size == learnedAnswerCount) {
                     val word = Word(split[0], split[1], (split[2].toIntOrNull() ?: 0))
                     dictionary.add(word)
-                } else if (split.size < RIGHT_ANSWER_NUMBER) {
+                } else if (split.size < learnedAnswerCount) {
                     println("Недостаточно данных для добавления слова.")
-                } else {
-                    println("Неверный формат строки: IndexOutOfBoundsException.")
                 }
             }
         } catch (e: FileNotFoundException) {
             println("Ошибка: Файл 'words.txt' не найден!")
+        } catch (e: IndexOutOfBoundsException) {
+            throw IllegalArgumentException("Некорректный файл")
         }
 
         return dictionary
