@@ -15,7 +15,7 @@ data class Question(
     val correctWord: Word,
 )
 
-class LearnWordsTrainer(private val countWordsQuestion: Int = 4, private val learnedAnswerCount: Int = 3) {
+class LearnWordsTrainer(private val countWordsQuestion: Int = 4, private val learnedAnswerCount: Int = 3, private val correctNumberOfElements: Int = 3) {
 
     private var question: Question? = null
     val dictionary = loadDictionary()
@@ -23,7 +23,9 @@ class LearnWordsTrainer(private val countWordsQuestion: Int = 4, private val lea
     fun getStatistics(): Statistics {
         val totalCount: Int = dictionary.count()
         val learnedCount: Int = dictionary.count { it.correctAnswerCount >= learnedAnswerCount }
-        val percent = learnedCount * 100 / totalCount
+        val percent = if (totalCount > 0) {
+            learnedCount * 100 / totalCount
+        } else 0
         return Statistics(totalCount, learnedCount, percent)
     }
 
@@ -76,7 +78,7 @@ class LearnWordsTrainer(private val countWordsQuestion: Int = 4, private val lea
             for (line in readFile) {
                 val split = line.split("|")
 
-                if (split.size == learnedAnswerCount) {
+                if (split.size == correctNumberOfElements) {
                     val word = Word(split[0], split[1], (split[2].toIntOrNull() ?: 0))
                     dictionary.add(word)
                 } else if (split.size < learnedAnswerCount) {
