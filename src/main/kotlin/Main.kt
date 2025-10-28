@@ -1,7 +1,5 @@
 package org.example
 
-const val RIGHT_ANSWER_NUMBER = 3
-
 data class Word(
     val text: String,
     val translate: String,
@@ -19,7 +17,12 @@ fun Question.asConsoleString(): String {
 
 fun main() {
 
-    val trainer = LearnWordsTrainer()
+    val trainer = try {
+        LearnWordsTrainer()
+    } catch (e: Exception) {
+        println("Невозможно загрузить словарь")
+        return
+    }
 
     while (true) {
         println(
