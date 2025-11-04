@@ -7,7 +7,18 @@ import java.net.http.HttpResponse
 
 const val TELEGRAM_BASE_URL = "https://api.telegram.org/bot"
 
-data class Update(val chatId: Int, val messageText: String)
+data class Update(
+    val chatId: Int,
+    val messageText: String,
+    val messageId: Int,
+    val userId: Int,
+    val firstName: String,
+    val username: String,
+    val isBot: Boolean,
+    val languageCode: String,
+    val chatType: String,
+    val date: Int,
+)
 
 fun main(args: Array<String>) {
 
@@ -50,6 +61,50 @@ fun parseHttpRequest(update: String): Update {
     val startTextIndex = update.lastIndexOf("text") + 7
     val endTextIndex = update.lastIndexOf("\"}")
     val textString = update.substring(startTextIndex, endTextIndex).trim()
-    return Update(chatIdString, textString)
+
+    val startMessageIdIndex = update.lastIndexOf("message_id") + 12
+    val endMessageIdIndex = update.indexOf(",", startMessageIdIndex)
+    val messageIdString = update.substring(startMessageIdIndex, endMessageIdIndex).toInt()
+
+    val startUserIdIndex = update.lastIndexOf("\"from\":{\"id\":") + 13
+    val endUserIdIndex = update.indexOf(",", startUserIdIndex)
+    val userIdString = update.substring(startUserIdIndex, endUserIdIndex).toInt()
+
+    val startFirstNameIndex = update.lastIndexOf("first_name") + 13
+    val endFirstNameIndex = update.indexOf("\",", startFirstNameIndex)
+    val firstNameString = update.substring(startFirstNameIndex, endFirstNameIndex).trim()
+
+    val startUsernameIndex = update.lastIndexOf("username") + 11
+    val endUsernameIndex = update.indexOf("\",", startUsernameIndex)
+    val usernameString = update.substring(startUsernameIndex, endUsernameIndex).trim()
+
+    val startIsBotIndex = update.lastIndexOf("is_bot") + 8
+    val endIsBotIndex = update.indexOf(",", startIsBotIndex)
+    val isBotString = update.substring(startIsBotIndex, endIsBotIndex).trim().toBoolean()
+
+    val startLangIndex = update.lastIndexOf("language_code") + 16
+    val endLangIndex = update.indexOf("\"", startLangIndex)
+    val languageCodeString = update.substring(startLangIndex, endLangIndex).trim()
+
+    val startChatTypeIndex = update.lastIndexOf("type") + 7
+    val endChatTypeIndex = update.indexOf("\"", startChatTypeIndex)
+    val chatTypeString = update.substring(startChatTypeIndex, endChatTypeIndex).trim()
+
+    val startDateIndex = update.lastIndexOf("date") + 6
+    val endDateIndex = update.indexOf(",", startDateIndex)
+    val dateString = update.substring(startDateIndex, endDateIndex).toInt()
+
+    return Update(
+        chatId = chatIdString,
+        messageText = textString,
+        messageId = messageIdString,
+        userId = userIdString,
+        firstName = firstNameString,
+        username = usernameString,
+        isBot = isBotString,
+        languageCode = languageCodeString,
+        chatType = chatTypeString,
+        date = dateString
+    )
 }
 
