@@ -43,11 +43,9 @@ fun main(args: Array<String>) {
 
 fun getUpdates(botToken: String, updateId: Int): String {
     val urlGetUpdates = "$TELEGRAM_BASE_URL$botToken/getUpdates?offset=$updateId"
-    val urlGetMe = "$TELEGRAM_BASE_URL$botToken/getMe"
 
     val client: HttpClient = HttpClient.newBuilder().build()
     val requestGetUpdates: HttpRequest = HttpRequest.newBuilder().uri(URI.create(urlGetUpdates)).build()
-    val requestGetMe: HttpRequest = HttpRequest.newBuilder().uri(URI.create(urlGetMe)).build()
     val response: HttpResponse<String?> = client.send(requestGetUpdates, HttpResponse.BodyHandlers.ofString())
 
     return response.body().toString()
