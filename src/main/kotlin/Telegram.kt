@@ -8,16 +8,16 @@ import java.net.http.HttpResponse
 const val TELEGRAM_BASE_URL = "https://api.telegram.org/bot"
 
 data class Update(
-    val chatId: Int,
-    val messageText: String,
-    val messageId: Int,
-    val userId: Int,
-    val firstName: String,
-    val username: String,
-    val isBot: Boolean,
-    val languageCode: String,
-    val chatType: String,
-    val date: Int,
+    val chatId: Int?,
+    val messageText: String?,
+    val messageId: Int?,
+    val userId: Int?,
+    val firstName: String?,
+    val username: String?,
+    val isBot: Boolean?,
+    val languageCode: String?,
+    val chatType: String?,
+    val date: Int?,
 )
 
 fun main(args: Array<String>) {
@@ -34,7 +34,7 @@ fun main(args: Array<String>) {
         val endUpdateIdIndex = updates.lastIndexOf(",\n\"message\"")
         if (startUpdateIdIndex == -1 || endUpdateIdIndex == -1) continue
 
-        val updateInfo = parseHttpRequest(updates)
+        val updateInfo = parseRegex(updates)
 
         val updateIdString = updates.substring(startUpdateIdIndex + 11, endUpdateIdIndex)
         updateId = updateIdString.toInt() + 1
@@ -51,58 +51,69 @@ fun getUpdates(botToken: String, updateId: Int): String {
     return response.body().toString()
 }
 
-fun parseHttpRequest(update: String): Update {
-    val startChatIdIndex = update.lastIndexOf("id") + 4
-    val endChatIdIndex = update.lastIndexOf(",\"first_name\"")
-    val chatIdString = update.substring(startChatIdIndex, endChatIdIndex).toInt()
+fun parseRegex(update: String): Update {
 
-    val startTextIndex = update.lastIndexOf("text") + 7
-    val endTextIndex = update.lastIndexOf("\"}")
-    val textString = update.substring(startTextIndex, endTextIndex).trim()
+    val chatIdRegex: Regex = "\"chat\":\\{\"id\":(\\d+)".toRegex()
+    val charIdMatchResult: MatchResult? = chatIdRegex.find(update)
+    val chatIdGroups = charIdMatchResult?.groups
+    val chatId = chatIdGroups?.get(1)?.value?.toInt()
 
-    val startMessageIdIndex = update.lastIndexOf("message_id") + 12
-    val endMessageIdIndex = update.indexOf(",", startMessageIdIndex)
-    val messageIdString = update.substring(startMessageIdIndex, endMessageIdIndex).toInt()
+    val textRegex: Regex = "\"text\":\"(.+?)\"".toRegex()
+    val textMatchResult: MatchResult? = textRegex.find(update)
+    val textGroups = textMatchResult?.groups
+    val text = textGroups?.get(1)?.value
 
-    val startUserIdIndex = update.lastIndexOf("\"from\":{\"id\":") + 13
-    val endUserIdIndex = update.indexOf(",", startUserIdIndex)
-    val userIdString = update.substring(startUserIdIndex, endUserIdIndex).toInt()
+    val messageIdRegex: Regex = "\"message_id\":(\\d+)".toRegex()
+    val messageIdMatchResult: MatchResult? = messageIdRegex.find(update)
+    val messageIdGroups = messageIdMatchResult?.groups
+    val messageId = messageIdGroups?.get(1)?.value?.toInt()
 
-    val startFirstNameIndex = update.lastIndexOf("first_name") + 13
-    val endFirstNameIndex = update.indexOf("\",", startFirstNameIndex)
-    val firstNameString = update.substring(startFirstNameIndex, endFirstNameIndex).trim()
+    val userIdRegex: Regex = "\"from\":\\{\"id\":(\\d+)".toRegex()
+    val userIdMatchResult: MatchResult? = userIdRegex.find(update)
+    val userIdGroups = userIdMatchResult?.groups
+    val userId = userIdGroups?.get(1)?.value?.toInt()
 
-    val startUsernameIndex = update.lastIndexOf("username") + 11
-    val endUsernameIndex = update.indexOf("\",", startUsernameIndex)
-    val usernameString = update.substring(startUsernameIndex, endUsernameIndex).trim()
+    val firstNameRegex: Regex = "\"first_name\":\"(.+?)\"".toRegex()
+    val firstNameMatchResult: MatchResult? = firstNameRegex.find(update)
+    val firstNameGroups = firstNameMatchResult?.groups
+    val firstName = firstNameGroups?.get(1)?.value
 
-    val startIsBotIndex = update.lastIndexOf("is_bot") + 8
-    val endIsBotIndex = update.indexOf(",", startIsBotIndex)
-    val isBotString = update.substring(startIsBotIndex, endIsBotIndex).trim().toBoolean()
+    val usernameRegex: Regex = "\"username\":\"(.+?)\"".toRegex()
+    val usernameMatchResult: MatchResult? = usernameRegex.find(update)
+    val usernameGroups = usernameMatchResult?.groups
+    val username = usernameGroups?.get(1)?.value
 
-    val startLangIndex = update.lastIndexOf("language_code") + 16
-    val endLangIndex = update.indexOf("\"", startLangIndex)
-    val languageCodeString = update.substring(startLangIndex, endLangIndex).trim()
+    val isBotRegex: Regex = "\"is_bot\":(true|false)".toRegex()
+    val isBotMatchResult: MatchResult? = isBotRegex.find(update)
+    val isBotGroups = isBotMatchResult?.groups
+    val isBot = isBotGroups?.get(1)?.value?.toBoolean()
 
-    val startChatTypeIndex = update.lastIndexOf("type") + 7
-    val endChatTypeIndex = update.indexOf("\"", startChatTypeIndex)
-    val chatTypeString = update.substring(startChatTypeIndex, endChatTypeIndex).trim()
+    val languageCodeRegex: Regex = "\"language_code\":\"(.+?)\"".toRegex()
+    val languageCodeMatchResult: MatchResult? = languageCodeRegex.find(update)
+    val languageCodeGroups = languageCodeMatchResult?.groups
+    val languageCode = languageCodeGroups?.get(1)?.value
 
-    val startDateIndex = update.lastIndexOf("date") + 6
-    val endDateIndex = update.indexOf(",", startDateIndex)
-    val dateString = update.substring(startDateIndex, endDateIndex).toInt()
+    val chatTypeRegex: Regex = "\"type\":\"(.+?)\"".toRegex()
+    val chatTypeMatchResult: MatchResult? = chatTypeRegex.find(update)
+    val chatTypeGroups = chatTypeMatchResult?.groups
+    val chatType = chatTypeGroups?.get(1)?.value
+
+    val dateRegex: Regex = "\"date\":(\\d+)".toRegex()
+    val dateMatchResult: MatchResult? = dateRegex.find(update)
+    val dateGroups = dateMatchResult?.groups
+    val date = dateGroups?.get(1)?.value?.toInt()
 
     return Update(
-        chatId = chatIdString,
-        messageText = textString,
-        messageId = messageIdString,
-        userId = userIdString,
-        firstName = firstNameString,
-        username = usernameString,
-        isBot = isBotString,
-        languageCode = languageCodeString,
-        chatType = chatTypeString,
-        date = dateString
+        chatId = chatId,
+        messageText = text,
+        messageId = messageId,
+        userId = userId,
+        firstName = firstName,
+        username = username,
+        isBot = isBot,
+        languageCode = languageCode,
+        chatType = chatType,
+        date = date
     )
 }
 
